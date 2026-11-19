@@ -13,7 +13,7 @@ export function PlanCards({ orgId, current }: { orgId?: string; current?: PlanId
           <div key={p.id} className={`panel flex flex-col p-6 ${highlight ? "border-forest ring-1 ring-forest" : ""}`}>
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">{p.name}</h3>
-              {highlight && <span className="rounded bg-lime px-2 py-0.5 font-mono text-[11px] uppercase">Popular</span>}
+              {highlight && <span className="rounded bg-lime px-2 py-0.5 font-mono text-[11px] uppercase text-paper">Popular</span>}
             </div>
             <p className="mt-4 text-4xl font-semibold tracking-tight">
               {p.price}<span className="text-base font-normal text-muted">{p.id === "free" ? "" : " / month"}</span>

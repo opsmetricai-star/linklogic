@@ -14,7 +14,7 @@ export default function Solutions() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
       <p className="eyebrow mb-3">Solutions</p>
-      <h1 className="max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">Built for operators who answer for what their agents do.</h1>
+      <h1 className="display max-w-3xl text-4xl sm:text-5xl">Built for operators who answer for what their agents do.</h1>
       <div className="mt-10 grid gap-4 md:grid-cols-2">
         {items.map(([t, d]) => (
           <div key={t} className="panel p-6">

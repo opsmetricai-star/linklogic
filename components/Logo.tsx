@@ -1,21 +1,16 @@
 import Link from "next/link";
+import Image from "next/image";
 
-export function Mark({ size = 24 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
-      <rect width="24" height="24" rx="6" fill="#12372C" />
-      <path d="M7 7v8a2 2 0 0 0 2 2h8" stroke="#C8F560" strokeWidth="2.2" strokeLinecap="round" fill="none" />
-      <circle cx="7" cy="7" r="1.6" fill="#C8F560" />
-      <circle cx="17" cy="17" r="1.6" fill="#C8F560" />
-    </svg>
-  );
+/** Approved LinkLogic mark. The light variant swaps the navy for white so it stays legible on dark surfaces. */
+export function Mark({ size = 28 }: { size?: number }) {
+  return <Image src="/logo-light.png" alt="" width={size * 1.46} height={size} priority className="h-auto" style={{ width: size * 1.46 }} />;
 }
 
 export function Logo({ href = "/" }: { href?: string }) {
   return (
-    <Link href={href} className="flex items-center gap-2 font-semibold tracking-tight">
+    <Link href={href} aria-label="LinkLogic home" className="flex items-center gap-2.5 font-medium tracking-tight text-display">
       <Mark />
-      <span>LinkLogic</span>
+      <span className="text-[17px]">LinkLogic</span>
     </Link>
   );
 }

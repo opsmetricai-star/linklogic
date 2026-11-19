@@ -45,7 +45,7 @@ export default async function Settings() {
 
       <section className="panel p-5">
         <h2 className="mb-2 font-semibold">Send a trace</h2>
-        <pre className="overflow-x-auto rounded bg-ink p-4 font-mono text-xs text-paper">{`curl -X POST ${base}/api/v1/traces \\
+        <pre className="overflow-x-auto rounded border border-line bg-paper p-4 font-mono text-xs text-ink">{`curl -X POST ${base}/api/v1/traces \\
   -H "Authorization: Bearer <your key>" -H "Content-Type: application/json" \\
   -d '{"traces":[{"name":"my-agent","input":"hi","output":"hello","latency_ms":420,"model":"gemini-3.8-flash"}]}'`}</pre>
       </section>

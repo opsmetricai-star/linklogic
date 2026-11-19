@@ -12,12 +12,12 @@ export function VolumeChart({ data }: { data: Day[] }) {
         <div className="h-56" role="img" aria-label="Bar chart of traces and errors per day">
           <ResponsiveContainer>
             <BarChart data={data}>
-              <CartesianGrid stroke="#DAD6C8" vertical={false} />
-              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Bar dataKey="traces" fill="#12372C" name="Traces" />
-              <Bar dataKey="errors" fill="#B3341F" name="Errors" />
+              <CartesianGrid stroke="#1B2A4A" vertical={false} />
+              <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#8CA6C4" }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "#8CA6C4" }} />
+              <Tooltip contentStyle={{ background: "#0A1224", border: "1px solid #1B2A4A", borderRadius: 6, color: "#D4E8FA" }} cursor={{ fill: "#0F1B35" }} />
+              <Bar dataKey="traces" fill="#19C7CC" name="Traces" />
+              <Bar dataKey="errors" fill="#FF7A7A" name="Errors" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -27,11 +27,11 @@ export function VolumeChart({ data }: { data: Day[] }) {
         <div className="h-56" role="img" aria-label="Line chart of p95 latency per day">
           <ResponsiveContainer>
             <ComposedChart data={data}>
-              <CartesianGrid stroke="#DAD6C8" vertical={false} />
-              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Line type="monotone" dataKey="p95" stroke="#12372C" strokeWidth={2} dot={false} name="p95 ms" />
+              <CartesianGrid stroke="#1B2A4A" vertical={false} />
+              <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#8CA6C4" }} />
+              <YAxis tick={{ fontSize: 11, fill: "#8CA6C4" }} />
+              <Tooltip contentStyle={{ background: "#0A1224", border: "1px solid #1B2A4A", borderRadius: 6, color: "#D4E8FA" }} cursor={{ fill: "#0F1B35" }} />
+              <Line type="monotone" dataKey="p95" stroke="#86C9F5" strokeWidth={2} dot={false} name="p95 ms" />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
