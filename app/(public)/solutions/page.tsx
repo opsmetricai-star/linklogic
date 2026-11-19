@@ -4,17 +4,17 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Solutions" };
 
 const items = [
-  ["Support agents", "Find the conversations where the agent guessed, then lock in the corrected answer as a regression test."],
-  ["Retrieval-augmented assistants", "Trace retriever spans next to the generation so you can see whether a bad answer was a retrieval or a prompt problem."],
-  ["Workflow & tool-calling agents", "Follow multi-step runs, spot the slow or failing tool, and track error rate per release."],
-  ["Prompt-heavy product teams", "Give product and engineering one place to version prompts and compare them on shared examples."],
+  ["Customer operations", "Lower escalation cost. The AI engine surfaces conversations where the agent guessed, and each one becomes a regression case that protects future releases."],
+  ["Knowledge and retrieval systems", "Cut wrong-answer risk. Retriever steps sit beside generation, so teams see whether a bad answer came from the data or the prompt."],
+  ["Workflow automation", "Raise completion rates. Multi-step runs expose the slow or failing tool, and error rate is tracked per release."],
+  ["Platform and product teams", "Shorten release cycles. Engineering and product share one record of prompt versions, scores and production behaviour."],
 ];
 
 export default function Solutions() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
       <p className="eyebrow mb-3">Solutions</p>
-      <h1 className="max-w-3xl text-4xl font-semibold tracking-tight">Built for teams with agents in production.</h1>
+      <h1 className="max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">Built for operators who answer for what their agents do.</h1>
       <div className="mt-10 grid gap-4 md:grid-cols-2">
         {items.map(([t, d]) => (
           <div key={t} className="panel p-6">
@@ -23,7 +23,10 @@ export default function Solutions() {
           </div>
         ))}
       </div>
-      <Link href="/signup" className="btn-primary mt-10">Start free</Link>
+      <div className="mt-10 flex gap-3">
+        <Link href="/signup" className="btn-primary">Sign up</Link>
+        <Link href="/login" className="btn-ghost">Sign in</Link>
+      </div>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { requireContext } from "@/lib/context";
 import { ActionForm } from "@/components/ActionForm";
 import { Badge, PageHeader } from "@/components/ui";
@@ -8,6 +9,9 @@ export const metadata = { title: "Settings" };
 
 export default async function Settings() {
   const { supabase, org, user } = await requireContext();
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "";
+  const base = `${h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https")}://${host}`;
   const { data: keys } = await supabase.from("api_keys").select("id,name,prefix,created_at,last_used_at,revoked_at").order("created_at", { ascending: false });
   return (
     <>
@@ -41,9 +45,9 @@ export default async function Settings() {
 
       <section className="panel p-5">
         <h2 className="mb-2 font-semibold">Send a trace</h2>
-        <pre className="overflow-x-auto rounded bg-ink p-4 font-mono text-xs text-paper">{`curl -X POST $APP_URL/api/v1/traces \\
+        <pre className="overflow-x-auto rounded bg-ink p-4 font-mono text-xs text-paper">{`curl -X POST ${base}/api/v1/traces \\
   -H "Authorization: Bearer <your key>" -H "Content-Type: application/json" \\
-  -d '{"traces":[{"name":"my-agent","input":"hi","output":"hello","latency_ms":420,"model":"gemini-2.0-flash"}]}'`}</pre>
+  -d '{"traces":[{"name":"my-agent","input":"hi","output":"hello","latency_ms":420,"model":"gemini-3.8-flash"}]}'`}</pre>
       </section>
     </>
   );

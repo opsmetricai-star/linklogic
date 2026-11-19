@@ -28,14 +28,12 @@ export function PlanCards({ orgId, current }: { orgId?: string; current?: PlanId
               {isCurrent ? (
                 <span className="btn-ghost w-full cursor-default">Current plan</span>
               ) : p.id === "free" ? (
-                orgId ? <span className="btn-ghost w-full cursor-default text-muted">Included by default</span> : <Link href="/signup" className="btn-ghost w-full">Start free</Link>
+                orgId ? <span className="btn-ghost w-full cursor-default text-muted">Included by default</span> : <Link href="/signup" className="btn-ghost w-full">Sign up</Link>
+              ) : !orgId ? (
+                <Link href={"/signup?plan=" + p.id} className={`${highlight ? "btn-primary" : "btn-ghost"} w-full`}>Sign up</Link>
               ) : url ? (
-                <a href={orgId ? url : "/signup?plan=" + p.id} className={`${highlight ? "btn-primary" : "btn-ghost"} w-full`} {...(orgId ? { target: "_blank", rel: "noopener" } : {})}>
-                  {orgId ? `Upgrade to ${p.name}` : `Get ${p.name}`}
-                </a>
-              ) : (
-                <Link href="/contact" className="btn-ghost w-full">Checkout coming soon: contact us</Link>
-              )}
+                <a href={url} className={`${highlight ? "btn-primary" : "btn-ghost"} w-full`} target="_blank" rel="noopener">Upgrade to {p.name}</a>
+              ) : null}
             </div>
           </div>
         );

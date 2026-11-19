@@ -116,7 +116,7 @@ export async function runPlayground(_: ActionState, fd: FormData): Promise<Actio
   const { supabase, org, plan } = await requireContext();
   const p = z.object({ version_id: uuid, input: z.string().max(4000) }).safeParse(Object.fromEntries(fd));
   if (!p.success) return fail("Pick a version and enter an input.");
-  if (!aiConfigured()) return fail("AI provider is not configured on this deployment (GEMINI_API_KEY).");
+  if (!aiConfigured()) return fail("AI analysis is temporarily unavailable. Please try again shortly.");
   const { data: v } = await supabase.from("prompt_versions").select("template").eq("id", p.data.version_id).single();
   if (!v) return fail("Version not found.");
   const limitErr = await reserveAi(org.id, "playground", plan.aiCalls);
@@ -146,7 +146,7 @@ export async function runExperiment(_: ActionState, fd: FormData): Promise<Actio
   if (fd.get("ev_llm_judge") && String(fd.get("judge_value") ?? "").trim()) evaluators.push({ type: "llm_judge", value: String(fd.get("judge_value")).trim().slice(0, 500) });
   const ev = evaluatorSchema.safeParse(evaluators);
   if (!ev.success) return fail("Choose at least one evaluator (and fill its parameter if it needs one).");
-  if (!aiConfigured()) return fail("AI provider is not configured on this deployment (GEMINI_API_KEY), so prompts cannot be run.");
+  if (!aiConfigured()) return fail("AI analysis is temporarily unavailable. Please try again shortly.");
 
   const [{ data: version }, { data: examples }] = await Promise.all([
     supabase.from("prompt_versions").select("id, template").eq("id", p.data.version_id).single(),
@@ -218,7 +218,7 @@ export async function runExperiment(_: ActionState, fd: FormData): Promise<Actio
 // ───────── Monitoring AI summary ─────────
 export async function summarizeMonitoring(_: ActionState, fd: FormData): Promise<ActionState> {
   const { supabase, org, plan } = await requireContext();
-  if (!aiConfigured()) return fail("AI provider is not configured on this deployment (GEMINI_API_KEY).");
+  if (!aiConfigured()) return fail("AI analysis is temporarily unavailable. Please try again shortly.");
   const since = new Date(Date.now() - 7 * 864e5).toISOString();
   const { data } = await supabase.from("traces").select("status, latency_ms, cost_usd, error, name").gte("started_at", since).limit(5000);
   if (!data?.length) return fail("No traces in the last 7 days to summarise.");

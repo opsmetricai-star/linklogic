@@ -7,10 +7,14 @@ import { createClient } from "@/lib/supabase/server";
 
 const creds = z.object({ email: z.string().trim().email().max(200), password: z.string().min(8).max(128) });
 
+// Links in emails must open the site the user is actually on (never a stale or local URL).
 async function origin() {
   const h = await headers();
-  return process.env.NEXT_PUBLIC_SITE_URL || `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  if (host) return `${h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https")}://${host}`;
+  return process.env.NEXT_PUBLIC_SITE_URL ?? "";
 }
+const planNext = (p: FormDataEntryValue | null) => (p === "plus" || p === "scale" ? "/dashboard/billing" : "/dashboard");
 const safeNext = (n: FormDataEntryValue | null) => (typeof n === "string" && /^\/dashboard(\/[\w\-/]*)?$/.test(n) ? n : "/dashboard");
 const enc = (s: string) => encodeURIComponent(s);
 
@@ -29,11 +33,11 @@ export async function signup(formData: FormData) {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     ...p.data,
-    options: { emailRedirectTo: `${await origin()}/auth/callback` },
+    options: { emailRedirectTo: `${await origin()}/auth/callback?next=${planNext(formData.get("plan"))}` },
   });
   if (error) redirect("/signup?error=" + enc(error.message));
-  if (data.session) redirect("/dashboard");
-  redirect("/login?notice=" + enc("Check your email to confirm your account, then sign in."));
+  if (data.session) redirect(planNext(formData.get("plan")));
+  redirect("/login?notice=" + enc("Check your email to confirm your account, then sign in.") + "&next=" + enc(planNext(formData.get("plan"))));
 }
 
 export async function forgot(formData: FormData) {

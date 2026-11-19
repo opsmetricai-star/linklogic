@@ -14,7 +14,7 @@ export function aiConfigured() {
 
 async function call(body: unknown): Promise<string> {
   const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new AiError("AI provider is not configured (GEMINI_API_KEY).", "not_configured");
+  if (!key) throw new AiError("AI analysis is temporarily unavailable. Please try again shortly.", "not_configured");
   const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
   const res = await fetch(`${base}/${model}:generateContent`, {
     method: "POST",

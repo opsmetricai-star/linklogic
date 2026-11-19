@@ -7,9 +7,9 @@ const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: { default: "LinkLogic — Reliability tooling for AI agents", template: "%s · LinkLogic" },
+  title: { default: "LinkLogic: the AI operations platform for enterprise agents", template: "%s · LinkLogic" },
   description:
-    "Trace every agent run, test changes against real examples, version your prompts and watch quality in production. LinkLogic is the reliability layer for teams shipping AI agents.",
+    "LinkLogic's AI engine analyzes every agent run, scores quality against your standards and flags the failures that cost revenue and add risk.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

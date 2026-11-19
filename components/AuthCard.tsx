@@ -10,7 +10,7 @@ export function AuthCard({ title, error, notice, children, footer }: {
         <div className="panel p-6">
           <h1 className="text-xl font-semibold">{title}</h1>
           {error === "config" ? (
-            <p role="alert" className="mt-4 rounded border border-danger/40 bg-danger/10 p-3 text-sm text-danger">This deployment has no Supabase configuration yet. See the README.</p>
+            <p role="alert" className="mt-4 rounded border border-danger/40 bg-danger/10 p-3 text-sm text-danger">Sign in is temporarily unavailable. Please try again shortly.</p>
           ) : error ? (
             <p role="alert" className="mt-4 rounded border border-danger/40 bg-danger/10 p-3 text-sm text-danger">{error}</p>
           ) : null}
