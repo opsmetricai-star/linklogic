@@ -33,7 +33,7 @@ export const PLANS: Record<PlanId, Plan> = {
   plus: {
     id: "plus",
     name: "Team",
-    price: "$39",
+    price: "$47",
     blurb: "For product teams shipping agents to real users.",
     traces: 50_000,
     aiCalls: 2_000,
@@ -50,7 +50,7 @@ export const PLANS: Record<PlanId, Plan> = {
   scale: {
     id: "scale",
     name: "Scale",
-    price: "$149",
+    price: "$97",
     blurb: "For organisations running agents at volume.",
     traces: 500_000,
     aiCalls: 20_000,

@@ -264,3 +264,19 @@ create policy billing_select on billing_events for select using (org_id is not n
 -- Users may not mutate trace identity columns
 revoke update on traces from authenticated, anon;
 grant update (feedback_score, feedback_note, tags) on traces to authenticated;
+
+-- ───────────── Grants (required on projects with restricted default privileges) ─────────────
+grant usage on schema public to anon, authenticated, service_role;
+grant all on all tables in schema public to service_role;
+grant all on all sequences in schema public to service_role;
+grant execute on all functions in schema public to service_role;
+grant select, insert, update, delete on all tables in schema public to authenticated;
+-- re-assert column-level restrictions after the blanket grant above
+revoke update on organizations from authenticated;
+grant update (name) on organizations to authenticated;
+revoke update on traces from authenticated;
+grant update (feedback_score, feedback_note, tags) on traces to authenticated;
+revoke insert, update, delete on ai_calls, billing_events, spans from authenticated;
+revoke insert on traces from authenticated;
+revoke all on contact_messages from authenticated, anon;
+grant execute on function is_member(uuid) to authenticated;
