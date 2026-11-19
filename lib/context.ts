@@ -48,6 +48,10 @@ export async function getUsage(orgId: string) {
 export async function reserveAi(orgId: string, kind: string, limit: number): Promise<string | null> {
   const used = (await getUsage(orgId)).aiCalls;
   if (used >= limit) return `Monthly AI-assisted run limit reached (${limit}). Upgrade your plan to continue.`;
-  await createAdminClient().from("ai_calls").insert({ org_id: orgId, kind });
   return null;
+}
+
+/** Record a metered AI call. Call only after the provider returned a result: failed calls are not billed. */
+export async function recordAi(orgId: string, kind: string) {
+  await createAdminClient().from("ai_calls").insert({ org_id: orgId, kind });
 }

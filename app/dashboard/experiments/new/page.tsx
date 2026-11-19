@@ -5,7 +5,7 @@ import { Empty, PageHeader } from "@/components/ui";
 import { runExperiment } from "../../actions";
 
 export const metadata = { title: "New experiment" };
-export const maxDuration = 60; // experiments run synchronously (max 50 examples per run)
+export const maxDuration = 60; // experiments run synchronously (max 12 examples per run)
 
 export default async function NewExperiment({ searchParams }: { searchParams: Promise<{ dataset?: string }> }) {
   const { dataset } = await searchParams;
@@ -20,7 +20,7 @@ export default async function NewExperiment({ searchParams }: { searchParams: Pr
   return (
     <>
       <Link href="/dashboard/experiments" className="text-sm text-muted underline">← Experiments</Link>
-      <div className="mt-2"><PageHeader title="New experiment" sub="Runs the prompt on up to the first 50 examples. Each generation (and each LLM-judge score) uses one AI-assisted run." /></div>
+      <div className="mt-2"><PageHeader title="New experiment" sub="Runs the prompt on the first 12 examples of the dataset. Each generation (and each LLM-judge score) uses one AI-assisted run." /></div>
       <div className="panel max-w-2xl p-5">
         <ActionForm action={runExperiment} submit="Run experiment" pendingLabel="Running… this can take up to a minute">
           <div><label className="label" htmlFor="name">Name</label><input id="name" name="name" required maxLength={100} className="input" placeholder="e.g. concise-tone v2" /></div>

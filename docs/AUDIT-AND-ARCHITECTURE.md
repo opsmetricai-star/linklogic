@@ -33,4 +33,4 @@ Original palette: paper `#F5F3EC`, ink `#0E1B17`, forest `#12372C`, lime accent 
 
 ## 5. Known limits
 
-Experiments run synchronously (max 50 examples/run, 60s function limit). Retention windows are advertised per plan but no purge job exists yet. Cost is whatever the client reports. Single workspace per user in the UI; no invites yet.
+Experiments run synchronously (max 12 examples/run, 60s function limit). Retention windows are advertised per plan but no purge job exists yet. Cost is whatever the client reports. Single workspace per user in the UI; no invites yet.

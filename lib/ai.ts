@@ -15,15 +15,26 @@ export function aiConfigured() {
 async function call(body: unknown): Promise<string> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new AiError("AI analysis is temporarily unavailable. Please try again shortly.", "not_configured");
-  const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
-  const res = await fetch(`${base}/${model}:generateContent`, {
-    method: "POST",
-    headers: { "content-type": "application/json", "x-goog-api-key": key },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(45_000),
-  });
-  if (res.status === 429) throw new AiError("The AI provider is rate limiting requests. Try again shortly.", "rate_limited");
-  if (!res.ok) throw new AiError(`AI provider error (${res.status}).`, "provider");
+  const model = process.env.GEMINI_MODEL || "gemini-3-flash-preview";
+  const busy = "The AI engine is busy right now. Please try again in a moment.";
+  let res: Response | null = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      res = await fetch(`${base}/${model}:generateContent`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-goog-api-key": key },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(20_000),
+      });
+    } catch {
+      res = null; // timeout or network error: retry
+    }
+    if (res && res.status !== 503 && res.status !== 500) break;
+    if (attempt < 2) await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+  }
+  if (!res) throw new AiError(busy, "provider");
+  if (res.status === 429) throw new AiError(busy, "rate_limited");
+  if (!res.ok) throw new AiError(busy, "provider");
   const json = await res.json();
   const text = json?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text ?? "").join("") ?? "";
   if (!text) throw new AiError("The AI provider returned an empty response.", "provider");

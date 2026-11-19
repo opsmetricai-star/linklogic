@@ -3,11 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { requireContext, reserveAi, getUsage } from "@/lib/context";
+import { requireContext, reserveAi, recordAi, getUsage } from "@/lib/context";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateText, judge, explainStats, AiError, aiConfigured } from "@/lib/ai";
 import { generateApiKey } from "@/lib/keys";
 import { renderTemplate, runDeterministic, summarize, type EvaluatorConfig } from "@/lib/evaluators";
+import { totals } from "@/lib/stats";
 
 export type ActionState = { ok?: boolean; error?: string; message?: string; output?: string; secret?: string } | null;
 
@@ -122,13 +123,16 @@ export async function runPlayground(_: ActionState, fd: FormData): Promise<Actio
   const limitErr = await reserveAi(org.id, "playground", plan.aiCalls);
   if (limitErr) return fail(limitErr);
   try {
-    return { ok: true, output: await generateText(renderTemplate(v.template, { input: p.data.input })) };
+    const output = await generateText(renderTemplate(v.template, { input: p.data.input }));
+    await recordAi(org.id, "playground");
+    return { ok: true, output };
   } catch (e) {
     return fail(e instanceof AiError ? e.message : "Generation failed.");
   }
 }
 
 // ───────── Experiments ─────────
+const MAX_EXAMPLES = 12; // each example takes ~20s with generation + judge; keeps a run inside the 60s function limit
 const evaluatorSchema = z.array(z.object({
   type: z.enum(["exact_match", "contains", "regex", "json_valid", "max_length", "llm_judge"]),
   value: z.string().max(500).optional(),
@@ -150,7 +154,7 @@ export async function runExperiment(_: ActionState, fd: FormData): Promise<Actio
 
   const [{ data: version }, { data: examples }] = await Promise.all([
     supabase.from("prompt_versions").select("id, template").eq("id", p.data.version_id).single(),
-    supabase.from("examples").select("id, input, expected").eq("dataset_id", p.data.dataset_id).order("created_at").limit(50),
+    supabase.from("examples").select("id, input, expected").eq("dataset_id", p.data.dataset_id).order("created_at").limit(MAX_EXAMPLES),
   ]);
   if (!version) return fail("Prompt version not found.");
   if (!examples?.length) return fail("That dataset has no examples yet.");
@@ -180,13 +184,13 @@ export async function runExperiment(_: ActionState, fd: FormData): Promise<Actio
       let output = "";
       let err: string | null = null;
       try {
-        await admin.from("ai_calls").insert({ org_id: org.id, kind: "experiment_generate" });
         output = await generateText(renderTemplate(version!.template, { input: ex.input }));
+        await recordAi(org.id, "experiment_generate");
         for (const cfg of evs) {
           if (cfg.type === "llm_judge") {
-            await admin.from("ai_calls").insert({ org_id: org.id, kind: "experiment_judge" });
             try {
               const j = await judge({ criteria: cfg.value ?? "", input: ex.input, output, expected: ex.expected });
+              await recordAi(org.id, "experiment_judge");
               scores.llm_judge = j.score;
               reasoning.llm_judge = j.reasoning;
             } catch (e) {
@@ -205,7 +209,7 @@ export async function runExperiment(_: ActionState, fd: FormData): Promise<Actio
       rows.push({ experiment_id: expId, org_id: org.id, example_id: ex.id, input: ex.input, expected: ex.expected, output, scores, reasoning, error: err, latency_ms: Date.now() - t0 });
     }
   }
-  await Promise.all([worker(), worker(), worker(), worker()]);
+  await Promise.all(Array.from({ length: 6 }, () => worker()));
   await admin.from("experiment_results").insert(rows);
   const ok = rows.filter((r) => !r.error) as unknown as { scores: Record<string, number> }[];
   await admin.from("experiments").update({
@@ -220,21 +224,23 @@ export async function summarizeMonitoring(_: ActionState, fd: FormData): Promise
   const { supabase, org, plan } = await requireContext();
   if (!aiConfigured()) return fail("AI analysis is temporarily unavailable. Please try again shortly.");
   const since = new Date(Date.now() - 7 * 864e5).toISOString();
-  const { data } = await supabase.from("traces").select("status, latency_ms, cost_usd, error, name").gte("started_at", since).limit(5000);
+  const { data } = await supabase.from("traces").select("started_at, status, latency_ms, cost_usd, prompt_tokens, completion_tokens, error, name").gte("started_at", since).limit(5000);
   if (!data?.length) return fail("No traces in the last 7 days to summarise.");
   const errs = data.filter((t) => t.status === "error");
-  const lat = data.map((t) => t.latency_ms).sort((a, b) => a - b);
+  const t = totals(data); // same deterministic maths as the monitoring page
   const stats = {
-    window: "7 days", traces: data.length, errors: errs.length,
-    error_rate_pct: Math.round((errs.length / data.length) * 1000) / 10,
-    p50_ms: lat[Math.floor(lat.length * 0.5)], p95_ms: lat[Math.floor(lat.length * 0.95)],
-    cost_usd: Math.round(data.reduce((a, t) => a + Number(t.cost_usd), 0) * 100) / 100,
+    window: "7 days", traces: t.traces, errors: t.errors,
+    error_rate_pct: Math.round(t.errorRate * 1000) / 10,
+    p50_ms: t.p50, p95_ms: t.p95, tokens: t.tokens,
+    cost_usd: Math.round(t.cost * 10000) / 10000,
   };
   const limitErr = await reserveAi(org.id, "monitoring_summary", plan.aiCalls);
   if (limitErr) return fail(limitErr);
   void fd;
   try {
-    return { ok: true, output: await explainStats(stats, errs.slice(0, 15).map((e) => ({ name: e.name, error: (e.error ?? "").slice(0, 200) }))) };
+    const output = await explainStats(stats, errs.slice(0, 15).map((e) => ({ name: e.name, error: (e.error ?? "").slice(0, 200) })));
+    await recordAi(org.id, "monitoring_summary");
+    return { ok: true, output };
   } catch (e) {
     return fail(e instanceof AiError ? e.message : "Summary failed.");
   }

@@ -2,7 +2,7 @@ import { requireContext, getUsage } from "@/lib/context";
 import { PlanCards } from "@/components/PlanCards";
 import { Badge, Meter, PageHeader } from "@/components/ui";
 import { fmtDate } from "@/lib/format";
-import type { PlanId } from "@/lib/plans";
+import { PLANS, type PlanId } from "@/lib/plans";
 
 export const metadata = { title: "Billing" };
 
@@ -20,9 +20,9 @@ export default async function Billing() {
         <div>
           <p className="eyebrow">Current plan</p>
           <p className="mt-1 text-2xl font-semibold">{plan.name}</p>
-          <p className="mt-1 text-sm">Subscription: <Badge tone={tone}>{org.plan === "free" ? "free tier" : org.plan_status}</Badge></p>
+          <p className="mt-1 text-sm">Subscription: <Badge tone={tone}>{org.plan === "free" ? "Free plan" : ({ active: "Active", past_due: "Payment overdue", canceled: "Canceled", inactive: "Inactive" } as Record<string, string>)[org.plan_status] ?? org.plan_status}</Badge></p>
           {org.plan !== "free" && org.plan_status !== "active" && (
-            <p className="mt-2 text-sm text-danger">Your {org.plan} subscription is {org.plan_status}, so free-tier limits apply until payment is confirmed again.</p>
+            <p className="mt-2 text-sm text-danger">Your {PLANS[org.plan as PlanId]?.name ?? "paid"} subscription is {org.plan_status === "past_due" ? "overdue" : org.plan_status}, so Developer limits apply until payment is confirmed.</p>
           )}
           <p className="mt-3 text-sm text-muted">To downgrade or cancel, manage the subscription from your payment provider receipt. We downgrade automatically when the cancellation is confirmed.</p>
         </div>

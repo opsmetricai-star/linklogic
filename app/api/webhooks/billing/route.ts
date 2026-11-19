@@ -41,10 +41,17 @@ export async function POST(req: Request) {
         .from("billing_events")
         .insert({ provider_event_id: event.id, org_id: orgId, type: event.type, payload: obj });
       if (dup?.code === "23505") return NextResponse.json({ received: true, duplicate: true });
-      await admin
+      const { data: updated, error: upErr } = await admin
         .from("organizations")
         .update({ plan, plan_status: "active", payment_customer_id: customer })
-        .eq("id", orgId);
+        .eq("id", orgId)
+        .select("id");
+      if (upErr || !updated?.length) {
+        // Roll back the idempotency record so the provider's retry can apply the plan.
+        await admin.from("billing_events").delete().eq("provider_event_id", event.id);
+        console.error("billing webhook: plan update failed", upErr?.message ?? "unknown org");
+        return NextResponse.json({ error: "Could not apply plan" }, { status: 500 });
+      }
       return NextResponse.json({ received: true, applied: true });
     }
   } else if (customer && ["customer.subscription.deleted", "invoice.payment_failed"].includes(event.type)) {
